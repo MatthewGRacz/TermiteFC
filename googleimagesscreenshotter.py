@@ -147,93 +147,45 @@ if __name__ == "__main__":
     fairy_circle_zones = [
         {
             "name": "FC_1",
-            "min_lat": -23.554890, "max_lat": -23.548332,
-            "min_long": 119.780111, "max_long": 119.783670
+            "min_lat": -23.392589, "max_lat": -23.378128,
+            "min_long": 119.851549, "max_long": 119.864724
         },
 
         {
             "name": "FC_2",
-            "min_lat": -23.554883, "max_lat": -23.548437,
-            "min_long": 119.779436, "max_long": 119.783890
+            "min_lat": -23.451708, "max_lat": -23.414730,
+            "min_long": 119.838545, "max_long": 119.853765
         },
 
         {
             "name": "FC_3",
-            "min_lat": -23.547365, "max_lat": -23.546721,
-            "min_long": 119.780265, "max_long": 119.787711
+            "min_lat": -23.548927, "max_lat": -23.379848,
+            "min_long": 119.825513, "max_long": 119.860976
         },
 
         {
             "name": "FC_4",
-            "min_lat": -23.545034, "max_lat": -23.541936,
-            "min_long": 119.778426, "max_long": 119.780985
+            "min_lat": -23.542796, "max_lat": -23.409688,
+            "min_long": 119.846767, "max_long": 119.861392
         },
 
         {
             "name": "FC_5",
-            "min_lat": -23.542271, "max_lat": -23.541061,
-            "min_long": 119.785279, "max_long": 119.786792
-        },
-
-        {
-            "name": "FC_6",
-            "min_lat": -23.554190, "max_lat": -23.548750,
-            "min_long": 119.781730, "max_long": 119.784278
-        },
-
-        {
-            "name": "FC_7",
-            "min_lat": -23.554154, "max_lat": -23.527714,
-            "min_long": 119.816292, "max_long": 119.826441
-        },
-
-        {
-            "name": "FC_8",
-            "min_lat": -23.408445, "max_lat": -23.378432,
-            "min_long": 119.845858, "max_long": 119.861592
-        },
-
-        {
-            "name": "FC_9",
-            "min_lat": -23.528043, "max_lat": -23.409688,
-            "min_long": 119.836652, "max_long": 119.861392
-        },
-
-        {
-            "name": "FC_10",
-            "min_lat": -23.544534, "max_lat": -23.530254,
-            "min_long": 119.829564, "max_long": 119.855626
-        },
-
-        {
-            "name": "FC_11",
-            "min_lat": -23.563185, "max_lat": -23.549400,
+            "min_lat": -23.563185, "max_lat": -23.544534,
             "min_long": 119.831683, "max_long": 119.850397
         },
 
         {
-            "name": "FC_12",
-            "min_lat": -23.371014, "max_lat": -23.344655,
-            "min_long": 120.399275, "max_long": 120.416976
+            "name": "FC_6",
+            "min_lat": -23.417927, "max_lat": -23.344655,
+            "min_long": 120.405368, "max_long": 120.639129
         },
 
         {
-            "name": "FC_13",
-            "min_lat": -23.419757, "max_lat": -23.415191,
-            "min_long": 120.621927, "max_long": 120.639129
+            "name": "FC_7",
+            "min_lat": -23.454154, "max_lat": -22.775583,
+            "min_long": 120.429190, "max_long": 120.693203
         },
-
-        {
-            "name": "FC_14",
-            "min_lat": -23.454154, "max_lat": -23.446579,
-            "min_long": 120.669888, "max_long": 120.694173
-        },
-
-        {
-            "name": "FC_15",
-            "min_lat": -22.777058, "max_lat": -22.775067,
-            "min_long": 120.426475, "max_long": 120.434228
-        }
         # Add as many patches as you need here...
     ]
 
@@ -241,7 +193,7 @@ if __name__ == "__main__":
 
     # The density dial: How many screenshots do you want per square kilometer?
     # Increase this number for more images, decrease it for fewer.
-    DENSITY_PER_SQ_KM = 5
+    DENSITY_PER_SQ_KM = 2
 
     print("Calculating area and generating random coordinates...")
 
