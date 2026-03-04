@@ -5,7 +5,7 @@ library(deldir)
 library(ggplot2)
 library(rcompanion)
 
-setwd("/Users/mattracz/Projects/Bonachela_Lab/TermiteProject")
+setwd("/Users/mattracz/Projects/Bonachela_Lab/TermiteFC")
 
 fccoords = na.omit(read.csv("initial_snapshot.csv", header = TRUE, sep=","))
 
