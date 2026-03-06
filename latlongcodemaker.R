@@ -87,7 +87,7 @@ if(length(allcoords) %% 4 == 0){ # only run if four corners given
             "min_long": %f, "max_long": %f
         },\n', minlat, maxlat, minlong, maxlong))
     
-  }
+  } 
 } else{
   
   cat("The number of lat,long coords is not divisible by 4; please re-enter")
