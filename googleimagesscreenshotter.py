@@ -146,43 +146,43 @@ if __name__ == "__main__":
     # Replace these coordinates with your actual Australian Fairy Circle patches
     fairy_circle_zones = [
         {
-            "name": "FC_1",
+            "name": "FC_",
             "min_lat": -23.392589, "max_lat": -23.378128,
             "min_long": 119.851549, "max_long": 119.864724
         },
 
         {
-            "name": "FC_2",
+            "name": "FC_",
             "min_lat": -23.451708, "max_lat": -23.414730,
             "min_long": 119.838545, "max_long": 119.853765
         },
 
         {
-            "name": "FC_3",
+            "name": "FC_",
             "min_lat": -23.548927, "max_lat": -23.379848,
             "min_long": 119.825513, "max_long": 119.860976
         },
 
         {
-            "name": "FC_4",
+            "name": "FC_",
             "min_lat": -23.542796, "max_lat": -23.409688,
             "min_long": 119.846767, "max_long": 119.861392
         },
 
         {
-            "name": "FC_5",
+            "name": "FC_",
             "min_lat": -23.563185, "max_lat": -23.544534,
             "min_long": 119.831683, "max_long": 119.850397
         },
 
         {
-            "name": "FC_6",
+            "name": "FC_",
             "min_lat": -23.417927, "max_lat": -23.344655,
             "min_long": 120.405368, "max_long": 120.639129
         },
 
         {
-            "name": "FC_7",
+            "name": "FC_",
             "min_lat": -23.454154, "max_lat": -22.775583,
             "min_long": 120.429190, "max_long": 120.693203
         },

@@ -82,10 +82,10 @@ if(length(allcoords) %% 4 == 0){ # only run if four corners given
     # FIX 2: Using sprintf() to inject the variables into the string
     cat(sprintf('
         {
-            "name": "FC_%d",
+            "name": "FC_",
             "min_lat": %f, "max_lat": %f,
             "min_long": %f, "max_long": %f
-        },\n', i, minlat, maxlat, minlong, maxlong))
+        },\n', minlat, maxlat, minlong, maxlong))
     
   }
 } else{
