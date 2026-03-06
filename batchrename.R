@@ -10,7 +10,6 @@ new_names <- paste0("FC_", seq_along(old_names), ".png")
 file.rename(old_names, new_names)
 
 
-
 # 2. Get the full list of your 4600 images
 all_images <- list.files("/Users/mattracz/Projects/Bonachela_Lab/FC_screenshots/Australia/4600_Images", full.names = TRUE)
 
