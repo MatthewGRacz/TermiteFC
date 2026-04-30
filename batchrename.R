@@ -1,5 +1,9 @@
 setwd("/Users/mattracz/Projects/Bonachela_Lab/FC_screenshots/Australia/4600_Images")
 
+working_dir <- getwd()
+
+target_dir <- "/Users/mattracz/Projects/Bonachela_Lab/FC_screenshots/Australia/next_segs"
+
 # 1. Grab the list of current files
 old_names <- list.files(pattern = "*.png", full.names = TRUE)
 
@@ -12,18 +16,18 @@ file.rename(old_names, new_names)
 
 
 # 2. Get the full list of your 4600 images
-all_images <- list.files("/Users/mattracz/Projects/Bonachela_Lab/FC_screenshots/Australia/4600_Images", full.names = TRUE)
+all_images <- list.files(working_dir, full.names = TRUE)
 
 # 3. Randomly select 500 of them 
-selected_500 <- sample(all_images, 500, replace = FALSE)
+selected_imgs <- sample(all_images, 250, replace = FALSE)
 
 # 4. Construct the exact new file paths
 # This glues your new folder path to the original file names (e.g., .../Train_500/FC_42.png)
-new_paths <- file.path("/Users/mattracz/Projects/Bonachela_Lab/FC_screenshots/Australia/Training", basename(selected_500))
+new_paths <- file.path(target_dir, basename(selected_imgs))
 
 # 5. Move the files by renaming their directory paths
-file.rename(from = selected_500, to = new_paths)
+file.rename(from= selected_imgs, to = new_paths)
 
-length(list.files("/Users/mattracz/Projects/Bonachela_Lab/FC_screenshots/Australia/Training", pattern = "\\.png$"))
+length(list.files(target_dir, pattern = "\\.png$"))
 
 

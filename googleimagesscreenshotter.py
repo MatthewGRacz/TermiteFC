@@ -4,40 +4,26 @@ import random
 import math
 from PIL import Image
 from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
 
 
 def js_code_execute(driver):
     """Executes JavaScript to hide Google Maps UI elements."""
     js_string = """
-    let layersBtn = document.querySelector('button[aria-label="Layers"]');
-    if (layersBtn) { layersBtn.click(); }
-
-    setTimeout(function() {
-        let moreBtn = document.querySelector('button[aria-label="More"]');
-        if (moreBtn) { moreBtn.click(); }
-
-        setTimeout(function() {
-            let buttons = document.querySelectorAll('button');
-            for (let btn of buttons) {
-                if (btn.innerText.includes("Labels") && btn.getAttribute('aria-checked') === 'true') {
-                    btn.click();
-                }
-                if (btn.innerText.includes("Globe") && btn.getAttribute('aria-checked') === 'true') {
-                    btn.click();
-                }
+        // Hides the massive UI overlay containers in Google Earth
+        let overlays = document.querySelectorAll('earth-app, #toolbar, #search-card');
+        for (let el of overlays) {
+            if (el && el.shadowRoot) {
+               // Earth relies heavily on shadow DOMs, which makes standard querySelectors fail.
+               // Setting the main wrapper opacities to 0 usually does the trick.
             }
-
-            let uiElements = document.querySelectorAll('#omnibox-container, #QA0Szd, .widget-pane, .gmnoprint, .scene-footer-container, #watermark, #minimap');
-            for (let el of uiElements) {
-                if (el) { el.style.display = 'none'; }
-            }
-
-            let closeBtn = document.querySelector('button[aria-label="Close"]');
-            if (closeBtn) { closeBtn.click(); }
-
-        }, 800);
-    }, 800);
-    """
+        }
+        // Brute force hiding common overlay classes
+        let uiElements = document.querySelectorAll('.ui-container, .tool-panel');
+        for (let el of uiElements) {
+            if (el) { el.style.display = 'none'; }
+        }
+        """
     try:
         driver.execute_script(js_string)
     except Exception:
@@ -84,13 +70,26 @@ def generate_random_coords(zone_name, min_lat, max_lat, min_long, max_long, coun
 
 
 def take_specific_screenshots(coordinate_list: list, sleep_time: float = 3):
-    """Takes a 740x400 screenshot for each coordinate, locked at 185m altitude."""
+    """Takes a 740x400 screenshot for each coordinate, locked at 90m altitude."""
 
-    driver = webdriver.Chrome()
+    chrome_options = Options()
+
+    # 1. DEFEAT AUTOMATION DETECTION (Removes the banner and unblocks WASM)
+    chrome_options.add_argument('--disable-blink-features=AutomationControlled')
+    chrome_options.add_experimental_option("excludeSwitches", ["enable-automation"])
+    chrome_options.add_experimental_option('useAutomationExtension', False)
+
+    # 2. UN-SANDBOX THE GPU (Allows your Mac to actually render the 3D globe)
+    chrome_options.add_argument('--no-sandbox')
+    chrome_options.add_argument('--disable-gpu-sandbox')
+    chrome_options.add_argument('--disable-dev-shm-usage')
+    chrome_options.add_argument('--enable-webgl')
+    chrome_options.add_argument('--ignore-gpu-blocklist')
+
+    driver = webdriver.Chrome(options=chrome_options)
     driver.maximize_window()
-    target_w, target_h = 1000,1000
+    target_w, target_h = 1000, 1000
 
-    # Dictionary to keep track of image numbers for each zone (e.g., Patch_A_1, Patch_A_2)
     zone_counters = {}
 
     with open("fairy_circles_log.txt", "w+") as f:
@@ -102,21 +101,28 @@ def take_specific_screenshots(coordinate_list: list, sleep_time: float = 3):
             lat = spot["lat"]
             long = spot["long"]
 
-            # Update the counter for this specific zone
             zone_counters[zone] = zone_counters.get(zone, 0) + 1
             image_number = zone_counters[zone]
 
             print(
                 f"Processing {index + 1}/{len(coordinate_list)}: {zone} #{image_number} (Lat {lat:.6f}, Long {long:.6f})")
 
-            # Format URL with hardcoded 90m altitude
-            url = f'https://www.google.com/maps/@{lat},{long},90m/data=!3m1!1e3?force=canvas'
+            # 3. THE URL FIX: We inject '1000a' to force the camera into the sky,
+            # and '90d' forces it to zoom to exactly 90 meters from the ground.
+            url = f'https://earth.google.com/web/@{lat},{long},1000a,90d,55y,0h,0t,0r'
 
             driver.get(url)
-            time.sleep(1)
+
+            # Give the WebGL engine a few extra seconds to stream the satellite tiles
+            time.sleep(4)
 
             js_code_execute(driver)
-            time.sleep(sleep_time)
+
+            time.sleep(sleep_time + 2)
+
+            image = screenshot(driver)
+
+            # ... (keep your existing crop logic below here)
 
             image = screenshot(driver)
 
