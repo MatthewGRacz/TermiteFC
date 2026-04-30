@@ -5,20 +5,16 @@ import math
 from PIL import Image
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
+import os
 
 
 def js_code_execute(driver):
     """Executes JavaScript to hide Google Maps UI elements."""
     js_string = """
-        // Hides the massive UI overlay containers in Google Earth
         let overlays = document.querySelectorAll('earth-app, #toolbar, #search-card');
         for (let el of overlays) {
-            if (el && el.shadowRoot) {
-               // Earth relies heavily on shadow DOMs, which makes standard querySelectors fail.
-               // Setting the main wrapper opacities to 0 usually does the trick.
-            }
+            if (el && el.shadowRoot) {}
         }
-        // Brute force hiding common overlay classes
         let uiElements = document.querySelectorAll('.ui-container, .tool-panel');
         for (let el of uiElements) {
             if (el) { el.style.display = 'none'; }
@@ -38,48 +34,36 @@ def screenshot(driver) -> Image:
 
 def calculate_shot_count(min_lat, max_lat, min_long, max_long, shots_per_sq_km=5):
     """Calculates how many screenshots to take based on the area in square kilometers."""
-    # 1 degree of latitude is ~111.32 km
     height_km = abs(max_lat - min_lat) * 111.32
-
-    # 1 degree of longitude is ~111.32 km * cos(latitude in radians)
     avg_lat_rad = math.radians((min_lat + max_lat) / 2)
     width_km = abs(max_long - min_long) * 111.32 * math.cos(avg_lat_rad)
-
-    # Calculate total area in square kilometers
     area_sq_km = height_km * width_km
-
-    # Multiply area by your desired density and round to nearest whole number
     total_shots = round(area_sq_km * shots_per_sq_km)
-
-    # Ensure it always takes at least 1 screenshot, even for tiny patches
     return max(1, total_shots)
 
 
-def generate_random_coords(zone_name, min_lat, max_lat, min_long, max_long, count):
+# REMOVED zone_name argument
+def generate_random_coords(min_lat, max_lat, min_long, max_long, count):
     """Generates a list of random coordinate dictionaries within a bounding box."""
     spots = []
     for _ in range(count):
-        rand_lat = random.uniform(min_lat, max_lat)
-        rand_long = random.uniform(min_long, max_long)
         spots.append({
-            "zone": zone_name,
-            "lat": rand_lat,
-            "long": rand_long
+            "lat": random.uniform(min_lat, max_lat),
+            "long": random.uniform(min_long, max_long)
         })
     return spots
 
 
 def take_specific_screenshots(coordinate_list: list, sleep_time: float = 3):
-    """Takes a 740x400 screenshot for each coordinate, locked at 90m altitude."""
+    """Takes a screenshot for each coordinate, locked at 90m altitude."""
+
+    output_dir = "/Users/mattracz/Projects/Bonachela_Lab/FC_screenshots/Australia/FC_4600"
+    os.makedirs(output_dir, exist_ok=True)
 
     chrome_options = Options()
-
-    # 1. DEFEAT AUTOMATION DETECTION (Removes the banner and unblocks WASM)
     chrome_options.add_argument('--disable-blink-features=AutomationControlled')
     chrome_options.add_experimental_option("excludeSwitches", ["enable-automation"])
     chrome_options.add_experimental_option('useAutomationExtension', False)
-
-    # 2. UN-SANDBOX THE GPU (Allows your Mac to actually render the 3D globe)
     chrome_options.add_argument('--no-sandbox')
     chrome_options.add_argument('--disable-gpu-sandbox')
     chrome_options.add_argument('--disable-dev-shm-usage')
@@ -88,45 +72,34 @@ def take_specific_screenshots(coordinate_list: list, sleep_time: float = 3):
 
     driver = webdriver.Chrome(options=chrome_options)
     driver.maximize_window()
-    target_w, target_h = 1000, 1000
+    target_w, target_h = 3000, 1150
 
-    zone_counters = {}
+    # REPLACED zone dictionary with a single global counter
+    global_counter = 0
 
     with open("fairy_circles_log.txt", "w+") as f:
         f.write("Fairy Circles Screenshot Log (90m Altitude)\n")
         f.write("-" * 45 + "\n")
 
         for index, spot in enumerate(coordinate_list):
-            zone = spot["zone"]
             lat = spot["lat"]
             long = spot["long"]
 
-            zone_counters[zone] = zone_counters.get(zone, 0) + 1
-            image_number = zone_counters[zone]
+            # Increment the single counter
+            global_counter += 1
 
             print(
-                f"Processing {index + 1}/{len(coordinate_list)}: {zone} #{image_number} (Lat {lat:.6f}, Long {long:.6f})")
+                f"Processing {index + 1}/{len(coordinate_list)}: Image #{global_counter} (Lat {lat:.6f}, Long {long:.6f})")
 
-            # 3. THE URL FIX: We inject '1000a' to force the camera into the sky,
-            # and '90d' forces it to zoom to exactly 90 meters from the ground.
             url = f'https://earth.google.com/web/@{lat},{long},1000a,90d,55y,0h,0t,0r'
 
             driver.get(url)
-
-            # Give the WebGL engine a few extra seconds to stream the satellite tiles
             time.sleep(4)
-
             js_code_execute(driver)
-
             time.sleep(sleep_time + 2)
 
             image = screenshot(driver)
 
-            # ... (keep your existing crop logic below here)
-
-            image = screenshot(driver)
-
-            # --- CROP LOGIC ---
             img_w, img_h = image.size
             left = (img_w - target_w) / 2
             top = (img_h - target_h) / 2
@@ -134,10 +107,12 @@ def take_specific_screenshots(coordinate_list: list, sleep_time: float = 3):
             bottom = (img_h + target_h) / 2
 
             image = image.crop((left, top, right, bottom))
-            # ------------------
 
-            filename = f"{zone}_{image_number}.png"
-            image.save(filename)
+            # The filename is now just "FC_" plus the global counter
+            filename = f"FC_{global_counter}.png"
+
+            full_save_path = os.path.join(output_dir, filename)
+            image.save(full_save_path)
 
             f.write(f"{filename} -> Lat: {lat:.6f}, Long: {long:.6f} | URL: {url}\n")
 
@@ -148,75 +123,33 @@ def take_specific_screenshots(coordinate_list: list, sleep_time: float = 3):
 
 if __name__ == "__main__":
 
-    # 1. DEFINE YOUR ZONES (Bounding Boxes)
-    # Replace these coordinates with your actual Australian Fairy Circle patches
+    # REMOVED "name" from the zones
     fairy_circle_zones = [
-        {
-            "name": "FC_",
-            "min_lat": -23.392589, "max_lat": -23.378128,
-            "min_long": 119.851549, "max_long": 119.864724
-        },
-
-        {
-            "name": "FC_",
-            "min_lat": -23.451708, "max_lat": -23.414730,
-            "min_long": 119.838545, "max_long": 119.853765
-        },
-
-        {
-            "name": "FC_",
-            "min_lat": -23.548927, "max_lat": -23.379848,
-            "min_long": 119.825513, "max_long": 119.860976
-        },
-
-        {
-            "name": "FC_",
-            "min_lat": -23.542796, "max_lat": -23.409688,
-            "min_long": 119.846767, "max_long": 119.861392
-        },
-
-        {
-            "name": "FC_",
-            "min_lat": -23.563185, "max_lat": -23.544534,
-            "min_long": 119.831683, "max_long": 119.850397
-        },
-
-        {
-            "name": "FC_",
-            "min_lat": -23.417927, "max_lat": -23.344655,
-            "min_long": 120.405368, "max_long": 120.639129
-        },
-
-        {
-            "name": "FC_",
-            "min_lat": -23.454154, "max_lat": -22.775583,
-            "min_long": 120.429190, "max_long": 120.693203
-        },
-        # Add as many patches as you need here...
+        {"min_lat": -23.392589, "max_lat": -23.378128, "min_long": 119.851549, "max_long": 119.864724},
+        {"min_lat": -23.451708, "max_lat": -23.414730, "min_long": 119.838545, "max_long": 119.853765},
+        {"min_lat": -23.548927, "max_lat": -23.379848, "min_long": 119.825513, "max_long": 119.860976},
+        {"min_lat": -23.542796, "max_lat": -23.409688, "min_long": 119.846767, "max_long": 119.861392},
+        {"min_lat": -23.563185, "max_lat": -23.544534, "min_long": 119.831683, "max_long": 119.850397},
+        {"min_lat": -23.417927, "max_lat": -23.344655, "min_long": 120.405368, "max_long": 120.639129},
+        {"min_lat": -23.454154, "max_lat": -22.775583, "min_long": 120.429190, "max_long": 120.693203}
     ]
 
     all_random_spots = []
-
-    # The density dial: How many screenshots do you want per square kilometer?
-    # Increase this number for more images, decrease it for fewer.
     DENSITY_PER_SQ_KM = 2
 
     print("Calculating area and generating random coordinates...")
 
-    # 2. CALCULATE PROPORTIONAL SHOTS AND GENERATE COORDS
-    for zone in fairy_circle_zones:
-        # Figure out how many shots this patch gets based on its physical size
+    # Using enumerate just to number the patches in the print statement
+    for i, zone in enumerate(fairy_circle_zones):
         proportional_count = calculate_shot_count(
             zone["min_lat"], zone["max_lat"],
             zone["min_long"], zone["max_long"],
             shots_per_sq_km=DENSITY_PER_SQ_KM
         )
 
-        print(f" -> {zone['name']} gets {proportional_count} screenshots.")
+        print(f" -> Patch {i + 1} gets {proportional_count} screenshots.")
 
-        # Generate the random spots
         spots = generate_random_coords(
-            zone_name=zone["name"],
             min_lat=zone["min_lat"], max_lat=zone["max_lat"],
             min_long=zone["min_long"], max_long=zone["max_long"],
             count=proportional_count
@@ -227,9 +160,7 @@ if __name__ == "__main__":
     print(f"\nTotal screenshots to take across all zones: {len(all_random_spots)}")
     print("Starting map generation...\n")
 
-    # 3. TAKE ALL THE SCREENSHOTS
     take_specific_screenshots(
         coordinate_list=all_random_spots,
-        sleep_time=1.6  # Seconds to wait for UI to hide before snapping
+        sleep_time=0
     )
-
