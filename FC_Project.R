@@ -230,6 +230,7 @@ get_tess_stats <- function(xcoords, ycoords, img_name, img_width, img_height, mi
       MND = mnd,
       ESP = esp,
       GS_GAMMA = gs_gamma,
+      CE = ce,
       NND_MEAN = mean_nnd,
       NND_MEDIAN = median_nnd,
       NND_SD = sd_nnd,
@@ -309,7 +310,7 @@ get_tess_areas <- function(img_df, img_width, img_height, min_number_fcs){
   tess_window <- owin(c(0, img_width), c(0, img_height))
   
   if(nrow(img_df) >= min_number_fcs){ 
-    #quick quality check: at least 10 FCs in an image
+    #quick quality check: at least min number FCs in an image
     #some images have a few FCs to help the AI recognize FCs, but if there's not many because of
     #terrain edge or any other reasons, then the analysis of tesselation won't be accurate for the
     #larger scale data analysis
@@ -336,7 +337,7 @@ get_tess_areas <- function(img_df, img_width, img_height, min_number_fcs){
   
 }
 
-main <- function(NDJSONfile){
+main <- function(NDJSONfile, min_number_fcs){
   
   NDJSONdata <- readLines('fcs-training.ndjson') 
   #first line is dataset info, every other line with image data per image; 
@@ -354,9 +355,6 @@ main <- function(NDJSONfile){
   
   tess_stats <- data.frame()
   #for stats about the tesselation
-  
-  min_number_fcs <- 17
-  #minimum number of FCs that need to be in an image for the tesselation, etc stats to run
   
   for(i in 1:length(NDJSONdata)){
     
@@ -404,7 +402,7 @@ main <- function(NDJSONfile){
 
 }
 
-fc_dfs <- main('fcs-training.ndjson')
+fc_dfs <- main('fcs-training.ndjson', 17)
 fc_master_set <- fc_dfs[[1]]
 fc_tess_stats <- fc_dfs[[2]]
 View(fc_master_set)
