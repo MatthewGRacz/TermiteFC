@@ -219,6 +219,8 @@ get_tess_stats <- function(xcoords, ycoords, img_name, img_width, img_height, mi
     max_area <- max(tess_areas)
     skew_area <- skewness(tess_areas)
     
+    
+    
     #----return everything as DF------
     
     return(data.frame(
@@ -238,13 +240,13 @@ get_tess_stats <- function(xcoords, ycoords, img_name, img_width, img_height, mi
       NND_MIN = min_nnd,
       NND_MAX = max_nnd,
       NND_SKEW = skew_nnd,
-      THEO_AREA_MEAN = mean_area,
-      THEO_AREA_MEDIAN = median_area,
-      THEO_AREA_SD = sd_area,
-      THEO_AREA_CV = cv_area,
-      THEO_AREA_MIN = min_area,
-      THEO_AREA_MAX = max_area,
-      THEO_AREA_SKEW = skew_area
+      REAL_AREA_MEAN = mean_area,
+      REAL_AREA_MEDIAN = median_area,
+      REAL_AREA_SD = sd_area,
+      REAL_AREA_CV = cv_area,
+      REAL_AREA_MIN = min_area,
+      REAL_AREA_MAX = max_area,
+      REAL_AREA_SKEW = skew_area
       
       
     ))
@@ -289,6 +291,14 @@ get_coords_and_areas <- function(xy_coords, img_name, img_width, img_height){
     centroid_x <- centroid[[1]][1]
     centroid_y <- centroid[[1]][2]
     
+    dists_to_vertices <- sqrt((xcoords_scaled - centroid_x)^2 + (ycoords_scaled - centroid_y)^2)
+    min_circles <- pi * min(dists_to_vertices)^2
+    #null hypothesis: each FC will be perfectly circular, and as the size of the
+    #perfect circle gets closer to the real irregular Voronoi cell size,
+    #the FC dispersion will become less random/uniform and more statistically patterned
+    theo_real_ratio <- min_circles/polygon_areas
+    
+    
     return(data.frame(
       
       NAME = img_name,
@@ -299,7 +309,10 @@ get_coords_and_areas <- function(xy_coords, img_name, img_width, img_height){
       REAL_AREA_M2 = polygon_areas,
       CENTROID_X = centroid_x,
       CENTROID_Y = centroid_y,
-      CENTROID = I(list(centroid))
+      CENTROID = I(list(centroid)),
+      MIN_RADIUS = min(dists_to_vertices),
+      MIN_CIRCLE_AREA = min_circles,
+      THEO_REAL_RATIO = theo_real_ratio
     ))
     
   
@@ -393,8 +406,11 @@ main <- function(NDJSONfile, min_number_fcs){
     tess_stats <- bind_rows(tess_stats, get_tess_stats(img_df$CENTROID_X, img_df$CENTROID_Y, img_name, img_width, img_height, min_number_fcs))
     #get stats for the tesselation for this img, plus other useful ecological metrics
     
-    
     fc_master_set <- bind_rows(img_df, fc_master_set)
+    
+    fc_master_set$THEO_REAL_RATIO <- median(fc_master_set$MIN_CIRCLE_AREA[fc_master_set$NAME %in% tess_stats$NAME, ])/tess_stats$REAL_AREA_MEDIAN[fc_master_set$NAME %in% tess_stats$NAME, ]
+    #ratio of the median area of the theoretical FC (perfect circle) to the observed Voronoi cells' median area
+    
     
   }
 
