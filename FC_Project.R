@@ -408,6 +408,7 @@ main <- function(NDJSONfile, min_number_fcs){
     
     fc_master_set <- bind_rows(img_df, fc_master_set)
     
+    fc_master_set$THEO_REAL_RATIO <- NA
     fc_master_set$THEO_REAL_RATIO <- median(fc_master_set$MIN_CIRCLE_AREA[fc_master_set$NAME %in% tess_stats$NAME, ])/tess_stats$REAL_AREA_MEDIAN[fc_master_set$NAME %in% tess_stats$NAME, ]
     #ratio of the median area of the theoretical FC (perfect circle) to the observed Voronoi cells' median area
     
@@ -418,7 +419,7 @@ main <- function(NDJSONfile, min_number_fcs){
 
 }
 
-fc_dfs <- main('fcs-training.ndjson', 17)
+fc_dfs <- main('fcs-training.ndjson', 30)
 fc_master_set <- fc_dfs[[1]]
 fc_tess_stats <- fc_dfs[[2]]
 View(fc_master_set)
